@@ -1,7 +1,7 @@
 const { Client } = require('@elastic/elasticsearch')
 const client = new Client({ node: 'http://localhost:9200' })
 
-async function run () {
+/*async function run () {
   // Let's start by indexing some data
   await client.index({
     index: 'game-of-thrones',
@@ -48,4 +48,4 @@ async function run () {
   console.log(body.hits.hits)
 }
 
-run().catch(console.log)
+run().catch(console.log)*/
