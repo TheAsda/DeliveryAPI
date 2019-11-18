@@ -35,12 +35,16 @@ const getAddresses = () => {
   });
 };
 
-const getAddress = id =>
-  new Promise((res, rej) => client.get(id, (err, reply) => (err ? rej(err) : res(reply))));
+const getStorageAddress = id =>
+  new Promise((res, rej) => client.hget('storage', id, (err, reply) => (err ? rej(err) : res(reply))));
+
+const getPickPointAddress = id =>
+  new Promise((res, rej) => client.get('pickPoints', id, (err, reply) => (err ? rej(err) : res(reply))));
 
 module.exports = {
   setAddresses,
   dump,
   getAddresses,
-  getAddress
+  getStorageAddress,
+  getPickPointAddress
 };
