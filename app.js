@@ -16,16 +16,17 @@ app.post('/newOrder', async (req, res) => {
    * package: mongo.package
    * paid: bool
    */
-
-  if (await redis.getAddress(from)) {
-    res.send("No such 'from' address");
-  }
-
-  if (await redis.getAddress(to)) {
-    res.send("No such 'to' address");
-  }
-
   const { sender, consignee, from, to, package, paid } = req.body;
+
+  if (!(await redis.getAddress(from))) {
+    res.send("No such 'from' address");
+    return;
+  }
+
+  if (!(await redis.getAddress(to))) {
+    res.send("No such 'to' address");
+    return;
+  }
 
   let senderID = await mongo.clients.findOne({ passport: sender.passport }, { _id: 1 });
 
@@ -50,7 +51,7 @@ app.post('/newOrder', async (req, res) => {
   let packageID = await new mongo.packages(package).save().then(doc => doc._id);
 
   new mongo.orders({
-    adoptionDate: Date.now(),
+    adoption_date: Date.now(),
     receive_date: null,
     sender: senderID,
     consignee: consigneeID,
