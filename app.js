@@ -50,7 +50,7 @@ app.post('/newOrder', async (req, res) => {
 
   let packageID = await new mongo.packages(package).save().then(doc => doc._id);
 
-  new mongo.orders({
+  const orderID = await new mongo.orders({
     adoption_date: Date.now(),
     receive_date: null,
     sender: senderID,
@@ -60,9 +60,57 @@ app.post('/newOrder', async (req, res) => {
     package: packageID,
     status: 'received',
     paid: paid
-  }).save();
+  })
+    .save()
+    .then(doc => doc._id);
+
+  res.send(orderID);
+});
+
+app.post('/closeOrder', async (req, res) => {
+  /*
+   * orderID: string
+   */
+
+  const { orderID, paid } = req.body;
+
+  const order = await mongo.orders.findOne({ _id: orderID });
+
+  if (order.status === 'closed') {
+    res.send({ error: 'Order is already closed' });
+    return;
+  }
+
+  if (order.paid !== true) {
+    if (paid === undefined && paid === false) {
+      res.send({ error: 'Order has not been paid' });
+      return;
+    }
+    mongo.orders
+      .find({ _id: orderID }, { receive_date: Date.now(), paid: true, status: 'closed' })
+      .then(doc => {
+        console.log(doc);
+      });
+  } else {
+    mongo.orders
+      .findByIdAndUpdate({ _id: orderID }, { receive_date: Date.now(), status: 'closed' })
+      .then(doc => {
+        console.log(doc);
+      });
+  }
 
   res.sendStatus(200);
 });
 
-app.listen(3000);
+app.get('/pickPoints', async (req, res) => {
+  const addresses = await redis.getAddresses();
+  res.send(addresses.pickPoints);
+});
+
+app.post('/path', (req, res) => {
+  const { from, to } = req.body;
+});
+
+app.listen(3000, () => {
+  console.log('Listening on port 3000');
+});
