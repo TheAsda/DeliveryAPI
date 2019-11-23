@@ -11,7 +11,7 @@ const pool = new Pool({
 const getAddresses = () =>
   new Promise((res, rej) => {
     pool.query(
-      'select houses.id,houses.number as house,streets.name as street,districts.name as district,cities.name as city,houses.type from houses left join streets on street = streets.id left join districts on district = districts.id left join cities on city = cities.id',
+      'select single, houses.id,houses.number as house,streets.name as street,districts.name as district,cities.name as city,houses.type from houses left join streets on street = streets.id left join districts on district = districts.id left join cities on city = cities.id',
       (err, data) => {
         const storages = [];
         const pickPoints = [];
@@ -20,7 +20,18 @@ const getAddresses = () =>
           if (row.type) {
             storages.push({ id: row.id, address: str, district: row.district });
           } else {
-            pickPoints.push({ id: row.id, address: str, district: row.district });
+            if (row.single) {
+              storages.push({
+                id: row.id,
+                address: str,
+                district: row.district
+              });
+            }
+            pickPoints.push({
+              id: row.id,
+              address: str,
+              district: row.district
+            });
           }
         });
         res({
@@ -31,6 +42,42 @@ const getAddresses = () =>
     );
   });
 
+const getAddressesByDistrict = () =>
+  new Promise((res, rej) => {
+    pool.query(
+      'select single, houses.id,houses.number as house,streets.name as street,districts.name as district,cities.name as city,houses.type from houses left join streets on street = streets.id left join districts on district = districts.id left join cities on city = cities.id',
+      (err, data) => {
+        let cities = [];
+        data.rows.forEach(item => {
+          if (!cities[item.city]) {
+            cities[item.city] = [];
+          }
+          if (!cities[item.city][item.district]) {
+            cities[item.city][item.district] = {
+              storage: undefined,
+              pickPoints: []
+            };
+          }
+          if (item.type) {
+            cities[item.city][item.district].storage = {
+              id: item.id
+            };
+          } else {
+            if (item.single) {
+              cities[item.city][item.district].storage = {
+                id: item.id
+              };
+            } else {
+              cities[item.city][item.district].pickPoints.push({ id: item.id });
+            }
+          }
+        });
+        res(cities);
+      }
+    );
+  });
+
 module.exports = {
-  getAddresses
+  getAddresses,
+  getAddressesByDistrict
 };

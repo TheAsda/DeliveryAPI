@@ -1,8 +1,9 @@
-const models = undefined; // require('./databases/mongo');
+const models = require('./databases/mongo');
 const postgres = require('./databases/sql');
 const redis = require('./databases/redis');
+const buildGraph = require('./databases/neo4j').buildGraph;
 
-const update = () => {
+const checkForUpdates = () => {
   postgres.getAddresses().then(async data => {
     const redisData = await redis.getAddresses();
     for (let field in data) {
@@ -15,7 +16,7 @@ const update = () => {
 };
 
 module.exports = () => {
-  update();
-
+  checkForUpdates();
+  postgres.getAddressesByDistrict().then(data => buildGraph(data));
   return { mongo: models, postgres, redis };
 };
