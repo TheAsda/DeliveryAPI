@@ -1,7 +1,11 @@
 const models = require('./databases/mongo');
 const postgres = require('./databases/sql');
 const redis = require('./databases/redis');
-const { buildGraph, findPath } = require('./databases/neo4j');
+const {
+  buildGraph,
+  findPath,
+  calculateDistance
+} = require('./databases/neo4j');
 
 const checkForUpdates = () => {
   postgres.getAddresses().then(async data => {
@@ -20,6 +24,7 @@ const fillNeo4j = () => {
 };
 
 module.exports = () => {
+  fillNeo4j();
   checkForUpdates();
   return { mongo: models, postgres, redis, neo4j: { findPath } };
 };

@@ -1,4 +1,6 @@
 const neo4j = require('neo4j-driver').v1;
+const { getDistance } = require('./here_api');
+const { getAddress } = require('./redis');
 
 var driver = neo4j.driver(
   'bolt://localhost:7687',
@@ -18,25 +20,24 @@ const buildGraph = async data => {
       for (let pickPoint of data[city][district].pickPoints) {
         const pickID = pickPoint.id;
         session.run(`create (p:PickPoint{id:${pickID}})`);
-        const relation = calculateDistance(storID, pickID);
-        console.log(relation);
+        const relation = await calculateDistance(storID, pickID);
         session.run(
-          `match (s:Storage),(p:PickPoint) where s.id=${storID} and p.id=${pickID} create (s)-[w:Way{time:${relation.time},distance:${relation.dist}}]->(p)`
+          `match (s:Storage),(p:PickPoint) where s.id=${storID} and p.id=${pickID} create (s)-[w:Way{time:${relation.time},distance:${relation.distance}}]->(p)`
         );
         session.run(
-          `match (s:Storage),(p:PickPoint) where s.id=${storID} and p.id=${pickID} create (s)<-[w:Way{time:${relation.time},distance:${relation.dist}}]-(p)`
+          `match (s:Storage),(p:PickPoint) where s.id=${storID} and p.id=${pickID} create (s)<-[w:Way{time:${relation.time},distance:${relation.distance}}]-(p)`
         );
       }
     }
   }
   for (let i = 0; i < storageIDs.length; i++) {
     for (let j = i + 1; j < storageIDs.length; j++) {
-      const relation = calculateDistance(storageIDs[i], storageIDs[j]);
+      const relation = await calculateDistance(storageIDs[i], storageIDs[j]);
       session.run(
-        `match (a:Storage),(b:Storage) where a.id = ${storageIDs[i]} and b.id = ${storageIDs[j]} create (a)-[w:Way{time:${relation.time},distance:${relation.dist}}]->(b)`
+        `match (a:Storage),(b:Storage) where a.id = ${storageIDs[i]} and b.id = ${storageIDs[j]} create (a)-[w:Way{time:${relation.time},distance:${relation.distance}}]->(b)`
       );
       session.run(
-        `match (a:Storage),(b:Storage) where a.id = ${storageIDs[i]} and b.id = ${storageIDs[j]} create (a)<-[w:Way{time:${relation.time},distance:${relation.dist}}]-(b)`
+        `match (a:Storage),(b:Storage) where a.id = ${storageIDs[i]} and b.id = ${storageIDs[j]} create (a)<-[w:Way{time:${relation.time},distance:${relation.distance}}]-(b)`
       );
     }
   }
@@ -59,7 +60,7 @@ const findPath = (from, to) => {
           rej('No such path');
           return;
         }
-        
+
         const path = data.records[0].get(0);
         for (let item of path.segments) {
           let dist = item.relationship.properties.distance;
@@ -91,79 +92,15 @@ const clearDB = () => {
 };
 
 function calculateDistance(from, to) {
-  const distances = {
-    1: {
-      2: {
-        time: 6,
-        dist: 2.3
-      }
-    },
-    2: {
-      4: {
-        time: 68,
-        dist: 46
-      },
-      5: {
-        time: 405,
-        dist: 700
-      },
-      6: {
-        time: 867,
-        dist: 1400
-      },
-      7: {
-        time: 655,
-        dist: 820
-      }
-    },
-    3: {
-      4: {
-        time: 10,
-        dist: 3.6
-      }
-    },
-    4: {
-      5: {
-        time: 416,
-        dist: 710
-      },
-      6: {
-        time: 854,
-        dist: 1300
-      },
-      7: {
-        time: 682,
-        dist: 860
-      }
-    },
-    5: {
-      6: {
-        time: 1304,
-        dist: 2000
-      },
-      7: {
-        time: 1050,
-        dist: 1500
-      }
-    },
-    6: {
-      7: {
-        time: 1241,
-        dist: 1800
-      }
-    }
-  };
-
-  if (to < from) {
-    let t = from;
-    from = to;
-    to = t;
-  }
-
-  return distances[Number(from)][Number(to)];
+  return new Promise((res, rej) => {
+    Promise.all([getAddress(from), getAddress(to)]).then(data => {
+      getDistance(data).then(data => res(data));
+    });
+  });
 }
 
 module.exports = {
   buildGraph,
-  findPath
+  findPath,
+  calculateDistance
 };

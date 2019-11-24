@@ -1,9 +1,9 @@
 const fetch = require('node-fetch');
 
-const getLatLon = (city, street, house) => {
+const getLatLon = address => {
   return new Promise((res, rej) => {
     fetch(
-      `https://geocoder.api.here.com/6.2/geocode.json?app_id=GiJ0fdprQ8xTIWag6aEp&app_code=3sxT725UJQAD_aB72xmMbg&searchtext=${city}+${street}+${house}`
+      `https://geocoder.api.here.com/6.2/geocode.json?app_id=GiJ0fdprQ8xTIWag6aEp&app_code=3sxT725UJQAD_aB72xmMbg&searchtext=${address}`
     )
       .then(res => res.json())
       .then(data => {
@@ -16,11 +16,7 @@ const getDistance = async addresses => {
   const coordinates = [];
   for (let i = 0; i < 2; i++) {
     coordinates.push(
-      await getLatLon(
-        addresses[i].city,
-        addresses[i].street,
-        addresses[i].house
-      )
+      await getLatLon(addresses[i].replace(' ', '+').replace(/,\./, ''))
     );
   }
   return new Promise((res, rej) => {
@@ -29,7 +25,6 @@ const getDistance = async addresses => {
     )
       .then(res => res.json())
       .then(data => {
-        //console.log(data.response.route[0].summary);
         res({
           distance: data.response.route[0].summary.distance / 1000,
           time: data.response.route[0].summary.travelTime / 60
