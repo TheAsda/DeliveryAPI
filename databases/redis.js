@@ -36,15 +36,31 @@ const getAddresses = () => {
 };
 
 const getStorageAddress = id =>
-  new Promise((res, rej) => client.hget('storage', id, (err, reply) => (err ? rej(err) : res(reply))));
+  new Promise((res, rej) =>
+    client.hget('storages', id, (err, reply) => (err ? rej(err) : res(reply)))
+  );
 
 const getPickPointAddress = id =>
-  new Promise((res, rej) => client.get('pickPoints', id, (err, reply) => (err ? rej(err) : res(reply))));
+  new Promise((res, rej) =>
+    client.hget('pickPoints', id, (err, reply) => (err ? rej(err) : res(reply)))
+  );
+
+const getAddress = id =>
+  new Promise((res, rej) => {
+    getStorageAddress(id).then(data => {
+      if (data === null) {
+        getPickPointAddress(id).then(data => res(data));
+      } else {
+        res(data);
+      }
+    });
+  });
 
 module.exports = {
   setAddresses,
   dump,
   getAddresses,
   getStorageAddress,
-  getPickPointAddress
+  getPickPointAddress,
+  getAddress
 };

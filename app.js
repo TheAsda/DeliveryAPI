@@ -28,7 +28,10 @@ app.post('/newOrder', async (req, res) => {
     return;
   }
 
-  let senderID = await mongo.clients.findOne({ passport: sender.passport }, { _id: 1 });
+  let senderID = await mongo.clients.findOne(
+    { passport: sender.passport },
+    { _id: 1 }
+  );
 
   if (!senderID) {
     await new mongo.clients(sender).save().then(doc => {
@@ -38,7 +41,10 @@ app.post('/newOrder', async (req, res) => {
     senderID = senderID._id;
   }
 
-  let consigneeID = await mongo.clients.findOne({ passport: consignee.passport }, { _id: 1 });
+  let consigneeID = await mongo.clients.findOne(
+    { passport: consignee.passport },
+    { _id: 1 }
+  );
 
   if (!consigneeID) {
     await new mongo.clients(consignee).save().then(doc => {
@@ -87,13 +93,19 @@ app.post('/closeOrder', async (req, res) => {
       return;
     }
     mongo.orders
-      .find({ _id: orderID }, { receive_date: Date.now(), paid: true, status: 'closed' })
+      .find(
+        { _id: orderID },
+        { receive_date: Date.now(), paid: true, status: 'closed' }
+      )
       .then(doc => {
         console.log(doc);
       });
   } else {
     mongo.orders
-      .findByIdAndUpdate({ _id: orderID }, { receive_date: Date.now(), status: 'closed' })
+      .findByIdAndUpdate(
+        { _id: orderID },
+        { receive_date: Date.now(), status: 'closed' }
+      )
       .then(doc => {
         console.log(doc);
       });
@@ -109,6 +121,17 @@ app.get('/pickPoints', async (req, res) => {
 
 app.post('/path', (req, res) => {
   const { from, to } = req.body;
+  neo4j
+    .findPath(Number(from), Number(to))
+    .then(async data => {
+      for (let i = 0; i < data.path.length; i++) {
+        data.path[i] = await redis.getAddress(data.path[i]);
+      }
+      res.send(data);
+    })
+    .catch(error => {
+      res.send({ error });
+    });
 });
 
 app.listen(3000, () => {
