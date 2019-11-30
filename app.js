@@ -1,7 +1,16 @@
 const express = require('express');
-const init = require('./init');
+const {
+  init,
+  redis,
+  neo4j,
+  mongo,
+  postgres,
+  elastic,
+  addPoint,
+  deletePoint
+} = require('./middleware');
 
-const { redis, neo4j, mongo, postgres, elastic } = init();
+init();
 
 const app = express();
 
@@ -132,6 +141,18 @@ app.post('/path', (req, res) => {
     .catch(error => {
       res.send({ error });
     });
+});
+
+app.post('/addPoint', (req, res) => {
+  const { address } = req.body;
+  addPoint(address);
+  res.sendStatus(200);
+});
+
+app.post('/deletePoint', (req, res) => {
+  const { id } = req.body;
+  deletePoint(id);
+  res.sendStatus(200);
 });
 
 app.listen(3000, () => {

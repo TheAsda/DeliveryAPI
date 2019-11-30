@@ -5,6 +5,12 @@ client.on('error', function(err) {
   console.log('Error ' + err);
 });
 
+const clear = () => {
+  client.flushall(() => {
+    console.log('Redis cleared');
+  });
+};
+
 const setAddresses = data => {
   data.storages.forEach(storage => {
     client.hset('storages', storage.id, storage.address);
@@ -62,5 +68,6 @@ module.exports = {
   getAddresses,
   getStorageAddress,
   getPickPointAddress,
-  getAddress
+  getAddress,
+  clear
 };
