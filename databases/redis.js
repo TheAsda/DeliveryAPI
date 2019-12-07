@@ -1,13 +1,14 @@
 const redis = require('redis');
+const { log } = require('./elastic');
 const client = redis.createClient();
 
 client.on('error', function(err) {
-  console.log('Error ' + err);
+  log('error', 'Error ' + err);
 });
 
 const clear = () => {
   client.flushall(() => {
-    console.log('Redis cleared');
+    log('info', 'Redis cleared');
   });
 };
 
@@ -23,7 +24,7 @@ const setAddresses = data => {
 
 const dump = () => {
   client.SAVE((err, reply) => {
-    console.log(reply);
+    log('info', 'Redis dumped');
   });
 };
 
@@ -36,6 +37,7 @@ const getAddresses = () => {
       client.hgetall('pickPoints', (err, reply) => res(reply));
     });
     Promise.all([getStorages, getPickPoints]).then(data => {
+      log('debug', 'Getting all addresses from redis');
       res({ storages: data[0], pickPoints: data[1] });
     });
   });
@@ -53,6 +55,7 @@ const getPickPointAddress = id =>
 
 const getAddress = id =>
   new Promise((res, rej) => {
+    log('debug', `Getting address with id{${id}} from redis`);
     getStorageAddress(id).then(data => {
       if (data === null) {
         getPickPointAddress(id).then(data => res(data));

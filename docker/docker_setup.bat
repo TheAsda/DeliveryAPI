@@ -2,8 +2,12 @@ rem docker volume create --name=redisdata
 rem docker run --name redis -d -p 6379:6379 -v redisdata:/data redis
 rem docker volume create --name=neo4jdata
 rem docker run --name neo4j -d -p 7474:7474 -p 7687:7687 -v neo4jdata:/data -v d:/neo4j_plugins:/plugins -e NEO4J_dbms_security_procedures_unrestricted=apoc.\\\* -e NEO4J_AUTH=neo4j/test neo4j
+
+rem docker network create --driver bridge elasticnetwork
 rem docker volume create --name=elasticdata
 rem docker run --name elastic -d -p 9200:9200 -p 9300:9300 -v elasticdata:/usr/share/elasticsearch/data -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:7.4.2
+rem docker run --link elastic:elasticsearch -d -p 5601:5601 docker.elastic.co/kibana/kibana:7.3.2
+
 rem docker network create --driver bridge mongonetwork
 rem docker volume create --name=mongodata
 rem docker run --name mongo -d -p 27017:27017 --network="mongonetwork"  --restart=always -v mongodata:/data/db -e MONGO_INITDB_ROOT_USERNAME=root -e MONGO_INITDB_ROOT_PASSWORD=example mongo

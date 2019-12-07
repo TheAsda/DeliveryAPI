@@ -2,16 +2,19 @@ const models = require('./databases/mongo');
 const postgres = require('./databases/postgres');
 const redis = require('./databases/redis');
 const { buildGraph, findPath } = require('./databases/neo4j');
+const { log, getPaidByDate } = require('./databases/elastic');
 
 const checkForUpdates = () => {
   postgres.getAddresses().then(async data => {
     const redisData = await redis.getAddresses();
-    console.log(redisData);
     for (let field in data) {
-      console.log(`Redis has ${Object.keys(redisData[field]).length} ${field}`);
-      console.log(`Postgres has ${data[field].length} ${field}`);
+      log(
+        'debug',
+        `Redis has ${Object.keys(redisData[field]).length} ${field}`
+      );
+      log('debug', `Postgres has ${data[field].length} ${field}`);
       if (data[field].length !== Object.keys(redisData[field]).length) {
-        console.log('Updating addresses');
+        log('info', 'Updating addresses');
         redis.clear();
         redis.setAddresses(data);
         redis.dump();
@@ -19,7 +22,7 @@ const checkForUpdates = () => {
         return;
       }
     }
-    console.log('No need to update addresses');
+    log('info', 'No need to update addresses');
   });
 };
 
@@ -48,5 +51,9 @@ module.exports = {
   redis,
   neo4j: { findPath },
   deletePoint,
-  addPoint
+  addPoint,
+  log,
+  elastic: {
+    getPaidByDate
+  }
 };

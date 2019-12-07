@@ -40,8 +40,7 @@ const getAddresses = () => {
   });
 };
 
-//delete single column!!!!
-const getAddressesByDistrict = () => {
+const getAddressesByDistricts = () => {
   return new Promise((res, rej) => {
     pool.query(
       'select single, houses.id,houses.number as house,streets.name as street,districts.name as district,cities.name as city,houses.type from houses left join streets on street = streets.id left join districts on district = districts.id left join cities on city = cities.id',
@@ -88,6 +87,21 @@ const deletePoint = id => {
     pool.query(`delete from houses where id = ${id}`, (err, data) => {
       res();
     });
+  });
+};
+
+const getAddressesByDistrict = district => {
+  return new Promise((res, rej) => {
+    pool.query(
+      `select houses.id from houses left join streets on street = streets.id left join districts on district = districts.id left join cities on city = cities.id where districts.name = '${district}'`,
+      (err, data) => {
+        const result = [];
+        data.rows.forEach(row => {
+          result.push(row.id);
+        });
+        res(result);
+      }
+    );
   });
 };
 
