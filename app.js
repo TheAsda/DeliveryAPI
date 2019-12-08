@@ -18,16 +18,7 @@ const app = express();
 app.use(express.json());
 
 app.post('/newOrder', async (req, res) => {
-  /*
-   * sender: mongo.client
-   * consignee: mongo.client
-   * from: id
-   * to: id
-   * package: mongo.package
-   */
-  const { sender, consignee, from, to, package, paid } = req.body;
-
-  log('info', 'Placing new order');
+  const { sender, consignee, from, to, package } = req.body;
 
   if (!(await redis.getAddress(from))) {
     log('error', "No such 'from' address");
@@ -91,22 +82,16 @@ app.post('/newOrder', async (req, res) => {
 });
 
 app.post('/closeOrder', async (req, res) => {
-  /*
-   * orderID: string
-   */
-
   const { orderID } = req.body;
 
   const order = await mongo.orders.findOne({ _id: orderID });
 
   if (order.status === 'closed') {
-    log('error', 'Order is already closed');
     res.send({ error: 'Order is already closed' });
     return;
   }
 
   if (order.paid === false) {
-    log('error', 'Order has not been paid');
     res.send({ error: 'Order has not been paid' });
     return;
   }
@@ -139,7 +124,7 @@ app.get('/pickPoints', async (req, res) => {
 
 app.post('/path', (req, res) => {
   const { from, to } = req.body;
-  log('info', `Getting path from {${from}} to {${to}}`);
+
   neo4j
     .findPath(Number(from), Number(to))
     .then(async data => {
@@ -149,13 +134,11 @@ app.post('/path', (req, res) => {
       res.send(data);
     })
     .catch(error => {
-      log('error', error);
       res.send({ error });
     });
 });
 
 app.post('/addPoint', (req, res) => {
-  log('info', 'Adding point');
   const { address } = req.body;
   addPoint(address);
   res.sendStatus(200);
@@ -180,7 +163,7 @@ app.post('/getPaid', async (req, res) => {
       return id.replace(/[\{\}]/g, '');
     });
   });
-  console.log('Orders from elastic:');
+  console.log('Orders from elastic');
 
   const orders = [];
   for (let id of ids) {
@@ -207,6 +190,5 @@ app.post('/getPaid', async (req, res) => {
 });
 
 app.listen(3000, () => {
-  log('info', 'Application launched');
   console.log('Listening on port 3000');
 });

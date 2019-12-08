@@ -8,13 +8,7 @@ const checkForUpdates = () => {
   postgres.getAddresses().then(async data => {
     const redisData = await redis.getAddresses();
     for (let field in data) {
-      log(
-        'debug',
-        `Redis has ${Object.keys(redisData[field]).length} ${field}`
-      );
-      log('debug', `Postgres has ${data[field].length} ${field}`);
       if (data[field].length !== Object.keys(redisData[field]).length) {
-        log('info', 'Updating addresses');
         redis.clear();
         redis.setAddresses(data);
         redis.dump();
@@ -22,7 +16,6 @@ const checkForUpdates = () => {
         return;
       }
     }
-    log('info', 'No need to update addresses');
   });
 };
 

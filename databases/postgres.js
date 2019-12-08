@@ -75,7 +75,6 @@ const addPoint = ({ city, district, street, house }) => {
     pool.query(
       `select add_point('${city}','${district}','${street}','${house}')`,
       (err, data) => {
-        console.log(data);
         res();
       }
     );
