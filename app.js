@@ -61,7 +61,7 @@ app.post('/newOrder', async (req, res) => {
   }
 
   let packageID = await new mongo.packages(package).save().then(doc => doc._id);
-
+  console.log(packageID);
   const orderID = await new mongo.orders({
     adoption_date: Date.now(),
     receive_date: null,
@@ -180,9 +180,26 @@ app.post('/getPaid', async (req, res) => {
   );
   console.log('Filtered district orders');
 
-  const result = districtOrders.map(order => ({ data: order, path: [] }));
+  const result = districtOrders.map(order => ({
+    data: order,
+    path: [],
+    consignee: {},
+    sender: {},
+    package: {}
+  }));
   for (let order of result) {
     order.path = await neo4j.findPath(order.data.from, order.data.to);
+    order.sender = (
+      await await mongo.clients.findById({ _id: order.data.sender })
+    ).toObject();
+    order.consignee = (
+      await mongo.clients.findById({
+        _id: order.data.consignee
+      })
+    ).toObject();
+    order.package = (
+      await mongo.packages.findById({ _id: order.data.package })
+    ).toObject();
   }
   console.log('Paths from neo4j and addresses from redis');
 
