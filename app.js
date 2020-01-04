@@ -10,11 +10,13 @@ const {
   elastic,
   postgres
 } = require('./middleware');
+const cors = require('cors');
 
 init();
 
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 
 app.post('/newOrder', async (req, res) => {
@@ -109,7 +111,11 @@ app.post('/closeOrder', async (req, res) => {
 app.post('/pay', (req, res) => {
   const { orderID } = req.body;
 
-  mongo.orders.findByIdAndUpdate({ _id: orderID }, { paid: true });
+  mongo.orders
+    .findByIdAndUpdate({ _id: orderID }, { paid: true }, { new: true })
+    .then(doc => {
+      console.log(doc);
+    });
 
   log('payment', `Order with id {${orderID}} has been payed`);
 
@@ -190,7 +196,7 @@ app.post('/getPaid', async (req, res) => {
   for (let order of result) {
     order.path = await neo4j.findPath(order.data.from, order.data.to);
     order.sender = (
-      await await mongo.clients.findById({ _id: order.data.sender })
+      await mongo.clients.findById({ _id: order.data.sender })
     ).toObject();
     order.consignee = (
       await mongo.clients.findById({
@@ -204,6 +210,28 @@ app.post('/getPaid', async (req, res) => {
   console.log('Paths from neo4j and addresses from redis');
 
   res.send(result);
+});
+
+app.get('/orders', async (req, res) => {
+  const orders = [];
+
+  for (const order of await mongo.orders.find()) {
+    let item = {
+      id: order.id,
+      paid: order.paid,
+      status: order.status,
+      package: {}
+    };
+    const title = await mongo.packages.findById({ _id: order.package });
+    item.package = title;
+    orders.push(item);
+  }
+
+  res.send(orders);
+});
+
+app.get('/districts', async (req, res) => {
+  res.send(await postgres.getDistricts());
 });
 
 app.listen(3000, () => {

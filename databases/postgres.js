@@ -70,6 +70,18 @@ const getAddressesByDistricts = () => {
   });
 };
 
+const getDistricts = () => {
+  return new Promise((res, rej) => {
+    pool.query('select name from districts', (err, data) => {
+      let districts = [];
+      data.rows.forEach(item => {
+        districts.push(item.name);
+      });
+      res(districts);
+    });
+  });
+};
+
 const addPoint = ({ city, district, street, house }) => {
   return new Promise((res, rej) => {
     pool.query(
@@ -108,5 +120,6 @@ module.exports = {
   getAddresses,
   getAddressesByDistrict,
   addPoint,
-  deletePoint
+  deletePoint,
+  getDistricts
 };
