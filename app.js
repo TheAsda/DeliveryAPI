@@ -100,7 +100,8 @@ app.post('/closeOrder', async (req, res) => {
 
   mongo.orders.findByIdAndUpdate(
     { _id: orderID },
-    { receive_date: Date.now(), status: 'closed' }
+    { receive_date: Date.now(), status: 'closed' },
+    { new: true }
   );
 
   log('close_order', `Order with id {${orderID}} has been closed`);
@@ -111,11 +112,11 @@ app.post('/closeOrder', async (req, res) => {
 app.post('/pay', (req, res) => {
   const { orderID } = req.body;
 
-  mongo.orders
-    .findByIdAndUpdate({ _id: orderID }, { paid: true }, { new: true })
-    .then(doc => {
-      console.log(doc);
-    });
+  mongo.orders.findByIdAndUpdate(
+    { _id: orderID },
+    { paid: true },
+    { new: true }
+  );
 
   log('payment', `Order with id {${orderID}} has been payed`);
 
