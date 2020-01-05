@@ -20,10 +20,14 @@ const log = (type, msg) => {
 const getPaidByDate = date => {
   return new Promise((res, rej) => {
     const str = new Date(date).toDateString();
+    console.log('Date: ' + str);
+
     client
       .search({
         index: 'payment',
-        body: { query: { match: { insertion: str } } }
+        body: {
+          query: { query_string: { query: str, default_operator: 'AND' } }
+        }
       })
       .then(({ body }) => {
         res(body.hits.hits);

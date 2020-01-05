@@ -112,11 +112,11 @@ app.post('/closeOrder', async (req, res) => {
 app.post('/pay', (req, res) => {
   const { orderID } = req.body;
 
-  mongo.orders.findByIdAndUpdate(
-    { _id: orderID },
-    { paid: true },
-    { new: true }
-  );
+  mongo.orders
+    .findByIdAndUpdate({ _id: orderID }, { paid: true }, { new: true })
+    .then(doc => {
+      console.log(doc);
+    });
 
   log('payment', `Order with id {${orderID}} has been payed`);
 
@@ -170,22 +170,28 @@ app.post('/getPaid', async (req, res) => {
       return id.replace(/[\{\}]/g, '');
     });
   });
-  console.log('Orders from elastic');
+  console.log('Orders from elastic Count: ' + ids.length);
 
+  let temp = [];
   const orders = [];
   for (let id of ids) {
+    if (temp[id] !== 1) {
+      temp[id] = 1;
+    } else {
+      continue;
+    }
     const data = await mongo.orders.findById({ _id: id });
-    orders.push(data);
+    if (data !== null) orders.push(data);
   }
-  console.log('Orders from mongo');
+  console.log('Orders from mongo Count: ' + orders.length);
 
   const districtIds = await postgres.getAddressesByDistrict(district);
-  console.log('District ids from postgre');
+  console.log('District ids from postgre Count: ' + districtIds.length);
 
   const districtOrders = orders.filter(order =>
     districtIds.includes(Number(order.from))
   );
-  console.log('Filtered district orders');
+  console.log('Filtered district orders Count: ' + districtOrders.length);
 
   const result = districtOrders.map(order => ({
     data: order,
