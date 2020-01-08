@@ -2,7 +2,7 @@ const { Pool } = require('pg');
 
 const pool = new Pool({
   user: 'yourusername',
-  host: '172.19.0.6',
+  host: '172.19.0.5',
   database: 'testdb',
   password: 'yoursecurepassword',
   port: 5432
@@ -15,6 +15,9 @@ const getAddresses = () => {
       (err, data) => {
         const storages = [];
         const pickPoints = [];
+        if (!data || !data.rows) {
+          return;
+        }
         data.rows.forEach(row => {
           const str = `${row.city}, ${row.street}, ${row.house}`;
           if (row.type) {

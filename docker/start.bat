@@ -1,5 +1,10 @@
-docker start redis
-docker start neo4j
-docker start mongo
-docker start postgres
-docker start elastic
+docker start redis2
+docker start neo4j2
+docker start mongo2
+docker start postgres2
+docker start elastic2
+docker start pgadmin2
+docker start magical_jonson
+docker start mongo-express2
+docker start api
+docker start ui

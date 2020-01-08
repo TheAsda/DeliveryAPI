@@ -227,7 +227,8 @@ app.get('/orders', async (req, res) => {
       id: order.id,
       paid: order.paid,
       status: order.status,
-      package: {}
+      package: {},
+      full_info: order
     };
     const title = await mongo.packages.findById({ _id: order.package });
     item.package = title;
