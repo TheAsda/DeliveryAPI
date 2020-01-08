@@ -1,3 +1,3 @@
 # Delivery API
-Node.js API for delivery service. Combines mongodb, postgres, neo4j, elastic search, redis.
+Node.js API for delivery service. Combines Mongodb, Postgres, Neo4j, Elasticsearch, Redis.
 
