@@ -1,5 +1,5 @@
 const { Client } = require('@elastic/elasticsearch');
-const client = new Client({ node: 'http://localhost:9200' });
+const client = new Client({ node: 'http://172.19.0.4:9200' });
 
 const clear = () => {
   client.indices.delete({

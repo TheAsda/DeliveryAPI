@@ -5,6 +5,6 @@ WORKDIR /app
 COPY . .
 RUN npm install
 
-CMD npm run dev
+CMD node app.js
 
 EXPOSE 3000
