@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 mongoose.set('useFindAndModify', false);
-const db = mongoose.connect('mongodb://172.19.0.4:27017/test', {
+const db = mongoose.connect(require('./ips/ips').mongo, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   user: 'user',

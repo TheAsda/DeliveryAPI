@@ -3,7 +3,7 @@ const { getDistance } = require('./here_api');
 const { getAddress } = require('./redis');
 
 var driver = neo4j.driver(
-  'bolt://172.19.0.3:7687',
+  require('./ips/ips').neo4j,
   neo4j.auth.basic('neo4j', 'test')
 );
 

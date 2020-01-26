@@ -201,7 +201,14 @@ app.post('/getPaid', async (req, res) => {
     package: {}
   }));
   for (let order of result) {
-    order.path = await neo4j.findPath(order.data.from, order.data.to);
+    order.path = await neo4j
+      .findPath(order.data.from, order.data.to)
+      .then(async data => {
+        for (let i = 0; i < data.path.length; i++) {
+          data.path[i] = await redis.getAddress(data.path[i]);
+        }
+        return data;
+      });
     order.sender = (
       await mongo.clients.findById({ _id: order.data.sender })
     ).toObject();

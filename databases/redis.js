@@ -1,5 +1,5 @@
 const redis = require('redis');
-const client = redis.createClient({host:'172.19.0.2'});
+const client = redis.createClient({ host: require('./ips/ips').redis });
 
 const clear = () => {
   client.flushall();

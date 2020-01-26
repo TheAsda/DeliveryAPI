@@ -16,4 +16,4 @@ rem docker volume create --name=postgresdata
 docker run --name postgres2 --network="meganetwork" -d --hostname=postgres -v=postgres:/pgdata --env-file=pg-env.list crunchydata/crunchy-postgres:centos7-10.9-2.4.1
 rem docker volume create --name=pgadmindata
 rem docker run --name pgadmin -d -p 5050:5050 -v=pgadmindata:/var/lib/pgadmin --env-file=pgadmin-env.list --network="pgnetwork" crunchydata/crunchy-pgadmin4:centos7-10.9-2.4.1
-docker run --name api -d -p 3000:3000 --network="meganetwork" api
+docker run --name api -d -p 3000:3000 --network="meganetwork" -v d:/ips:/app/databases/ips api

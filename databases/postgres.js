@@ -2,7 +2,7 @@ const { Pool } = require('pg');
 
 const pool = new Pool({
   user: 'yourusername',
-  host: '172.19.0.5',
+  host: require('./ips/ips').postgres,
   database: 'testdb',
   password: 'yoursecurepassword',
   port: 5432
@@ -49,6 +49,9 @@ const getAddressesByDistricts = () => {
       'select single, houses.id,houses.number as house,streets.name as street,districts.name as district,cities.name as city,houses.type from houses left join streets on street = streets.id left join districts on district = districts.id left join cities on city = cities.id',
       (err, data) => {
         let cities = [];
+        if (!data || !data.rows) {
+          return;
+        }
         data.rows.forEach(item => {
           if (!cities[item.city]) {
             cities[item.city] = [];
@@ -77,6 +80,9 @@ const getDistricts = () => {
   return new Promise((res, rej) => {
     pool.query('select name from districts', (err, data) => {
       let districts = [];
+      if (!data || !data.rows) {
+        return;
+      }
       data.rows.forEach(item => {
         districts.push(item.name);
       });
@@ -110,6 +116,9 @@ const getAddressesByDistrict = district => {
       `select houses.id from houses left join streets on street = streets.id left join districts on district = districts.id left join cities on city = cities.id where districts.name = '${district}'`,
       (err, data) => {
         const result = [];
+        if (!data || !data.rows) {
+          return;
+        }
         data.rows.forEach(row => {
           result.push(row.id);
         });
